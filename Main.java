@@ -1108,7 +1108,7 @@ public class Main{
 		t2--;
 	}
 	static String regname[]={"","rax","rbx","rcx","rdx","rbp","rsp","rdi","rsi","r8","r9","r10","r11","r12","r13","r14","r15"};
-	static String ans="";
+	static StringBuffer ans=new StringBuffer();
 	static String varstring(int v)throws Exception{
 		String k=vkind.get(v);
 		int vv=(int)vnum.get(v);
@@ -1121,7 +1121,7 @@ public class Main{
 	}
 	static int toregister(int now)throws Exception{
 		if(vkind.get(now)=="global"||vkind.get(now)=="stack"){
-			ans+="\tmov "+regname[(lastregister^=rand.nextInt(3)+1)+1]+","+varstring(now)+"\n";
+			ans.append("\tmov "+regname[(lastregister^=rand.nextInt(3)+1)+1]+","+varstring(now)+"\n");
 			now=lastregister+1;
 		}
 		return now;
@@ -1129,7 +1129,7 @@ public class Main{
 	static void codegen(List<Code>ir)throws Exception{
 		BufferedReader reader=new BufferedReader(new FileReader("./builtin1.txt"));
 		for(String line;(line=reader.readLine())!=null;)
-			ans+=line+"\n";
+			ans.append(line+"\n");
 		for(int i=0;i<ir.size();i++){
 			Code o=ir.get(i);
 			if(o.op.equals("")){
@@ -1140,24 +1140,24 @@ public class Main{
 				System.out.printf(" %d %d %d\n",o.c,o.a,o.b);
 			}
 			if(o.op==""){
-				ans+="\n";
+				ans.append("\n");
 			}
 			else if(o.op=="funclab"){
-				if(o.c==0)ans+="main:\n";
-				else ans+="F"+o.c+":\n";
-				ans+="\tpush rbp\n";
-				ans+="\tmov rbp,rsp\n";
-				ans+="\tsub rsp,"+o.a+"\n";
+				if(o.c==0)ans.append("main:\n");
+				else ans.append("F"+o.c+":\n");
+				ans.append("\tpush rbp\n");
+				ans.append("\tmov rbp,rsp\n");
+				ans.append("\tsub rsp,"+o.a+"\n");
 			}
 			else if(o.op=="label"){
-				ans+="L"+o.c+":\n";
+				ans.append("L"+o.c+":\n");
 			}
 			else if(o.op=="send"){
 				int j=i;
 				while(ir.get(j).op=="send")j++;
 				for(int w=i;w<j;w++){
 					int cc=toregister(ir.get(w).c);
-					ans+="\tmov "+(w<=i+1?regname[w-i+7]:"qword[arg+"+8*(w-i-1)+"]")+","+varstring(cc)+"\n";
+					ans.append("\tmov "+(w<=i+1?regname[w-i+7]:"qword[arg+"+8*(w-i-1)+"]")+","+varstring(cc)+"\n");
 				}
 				i=j-1;
 			}
@@ -1166,145 +1166,145 @@ public class Main{
 				while(ir.get(j).op=="get")j++;
 				for(int w=i;w<j;w++){
 					int cc=vkind.get(ir.get(w).c)=="global"||vkind.get(ir.get(w).c)=="stack"?(lastregister^=rand.nextInt(3)+1)+1:ir.get(w).c;
-					ans+="\tmov "+varstring(cc)+","+(w<=i+1?regname[w-i+7]:"qword[arg+"+8*(w-i-1)+"]")+"\n";
-					if(cc<=4)ans+="\tmov "+varstring(ir.get(w).c)+","+regname[cc]+"\n";
+					ans.append("\tmov "+varstring(cc)+","+(w<=i+1?regname[w-i+7]:"qword[arg+"+8*(w-i-1)+"]")+"\n");
+					if(cc<=4)ans.append("\tmov "+varstring(ir.get(w).c)+","+regname[cc]+"\n");
 				}
 				i=j-1;
 			}
 			else if(o.op=="call"){
 				if(o.c==1){
-					ans+="\txor rax,rax\n";
-					ans+="\tmov al,byte[rdi]\n";
+					ans.append("\txor rax,rax\n");
+					ans.append("\tmov al,byte[rdi]\n");
 				}
 				else if(o.c==10){
-					ans+="\tmov rax,qword[rdi]\n";
+					ans.append("\tmov rax,qword[rdi]\n");
 				}
 				else if(o.c==5||o.c==6){
-					ans+="\tmov rsi,rdi\n";
-					ans+="\tinc rsi\n";
-					ans+="\tmov rdi,"+(o.c==5?"format\n":"formatln\n");
-					ans+="\txor rax,rax\n";
-					ans+="\tcall printf\n";
+					ans.append("\tmov rsi,rdi\n");
+					ans.append("\tinc rsi\n");
+					ans.append("\tmov rdi,"+(o.c==5?"format\n":"formatln\n"));
+					ans.append("\txor rax,rax\n");
+					ans.append("\tcall printf\n");
 				}
 				else if(o.c<=17){
 					String ss[]={"","length","substring","parseInt","ord","print","println","getString","getInt","toString","size!","concat","strls","strgt","strle","strge","streq","strne"};
-					ans+="\tcall "+ss[o.c]+"\n";
+					ans.append("\tcall "+ss[o.c]+"\n");
 				}
-				else ans+="\tcall F"+o.c+"\n";
+				else ans.append("\tcall F"+o.c+"\n");
 			}
 			else if(o.op=="ret"){
-				ans+="\tleave\n";
-				ans+="\tret\n";
+				ans.append("\tleave\n");
+				ans.append("\tret\n");
 			}
 			else if(o.op=="save"){
 				int cc=toregister(o.c),aa=toregister(o.a);
-				ans+="\tmov qword["+varstring(cc)+"],"+varstring(aa)+"\n";
+				ans.append("\tmov qword["+varstring(cc)+"],"+varstring(aa)+"\n");
 			}
 			else if(o.op=="load"){
 				int cc=vkind.get(o.c)=="global"||vkind.get(o.c)=="stack"?(lastregister^=rand.nextInt(3)+1)+1:o.c;
 				int aa=toregister(o.a);
-				ans+="\tmov "+varstring(cc)+",qword["+varstring(aa)+"]\n";
-				if(cc<=4)ans+="\tmov "+varstring(o.c)+","+regname[cc]+"\n";
+				ans.append("\tmov "+varstring(cc)+",qword["+varstring(aa)+"]\n");
+				if(cc<=4)ans.append("\tmov "+varstring(o.c)+","+regname[cc]+"\n");
 			}
 			else if(o.op=="mov"){
 				int cc=o.c,aa=o.a;
 				if((vkind.get(cc)=="global"||vkind.get(cc)=="stack"))
 					aa=toregister(aa);
-				ans+="\tmov "+varstring(cc)+","+varstring(aa)+"\n";
+				ans.append("\tmov "+varstring(cc)+","+varstring(aa)+"\n");
 			}
 			else if(o.op=="lea"){
 				int cc=vkind.get(o.c)=="global"||vkind.get(o.c)=="stack"?(lastregister^=rand.nextInt(3)+1)+1:o.c;
 				int aa=toregister(o.a),bb=toregister(o.b);
-				ans+="\tlea "+varstring(cc)+",["+varstring(aa)+"+8*"+varstring(bb)+"+8]\n";
-				if(cc<=4)ans+="\tmov "+varstring(o.c)+","+regname[cc]+"\n";
+				ans.append("\tlea "+varstring(cc)+",["+varstring(aa)+"+8*"+varstring(bb)+"+8]\n");
+				if(cc<=4)ans.append("\tmov "+varstring(o.c)+","+regname[cc]+"\n");
 			}
 			else if(o.op=="malloc"){
-				ans+="\tmov rdi,"+varstring(o.a)+"\n";
-				ans+="\tshl rdi,3\n";
-				ans+="\tadd rdi,8\n";
-				ans+="\tcall malloc\n";
-				ans+="\tmov "+varstring(o.c)+",rax\n";
-				ans+="\tmov "+regname[(lastregister=rand.nextInt(3)+1)+1]+","+varstring(o.a)+"\n";
-				ans+="\tmov qword[rax],"+regname[lastregister+1]+"\n";
+				ans.append("\tmov rdi,"+varstring(o.a)+"\n");
+				ans.append("\tshl rdi,3\n");
+				ans.append("\tadd rdi,8\n");
+				ans.append("\tcall malloc\n");
+				ans.append("\tmov "+varstring(o.c)+",rax\n");
+				ans.append("\tmov "+regname[(lastregister=rand.nextInt(3)+1)+1]+","+varstring(o.a)+"\n");
+				ans.append("\tmov qword[rax],"+regname[lastregister+1]+"\n");
 			}
 			else if(o.op=="jmp"){
-				ans+="\tjmp L"+o.c+"\n";
+				ans.append("\tjmp L"+o.c+"\n");
 			}
 			else if(o.op=="jz"||o.op=="jnz"){
-				ans+="\t"+o.op+" L"+o.c+"\n";
+				ans.append("\t"+o.op+" L"+o.c+"\n");
 			}
 			else if(o.op=="test"){
 				int cc=toregister(o.c);
-				ans+="\ttest "+varstring(cc)+","+varstring(cc)+"\n";
+				ans.append("\ttest "+varstring(cc)+","+varstring(cc)+"\n");
 			}
 			else{
 				if(o.op=="+"||o.op=="-"||o.op=="&"||o.op=="|"||o.op=="^"){
 					int cc=vkind.get(o.c)=="global"||vkind.get(o.c)=="stack"?(lastregister^=rand.nextInt(3)+1)+1:o.c;
-					ans+="\tmov "+varstring(cc)+","+varstring(o.a)+"\n";
-					if(o.op=="+")ans+="\tadd ";
-					else if(o.op=="-")ans+="\tsub ";
-					else if(o.op=="&")ans+="\tand ";
-					else if(o.op=="|")ans+="\tor ";
-					else if(o.op=="^")ans+="\txor ";
+					ans.append("\tmov "+varstring(cc)+","+varstring(o.a)+"\n");
+					if(o.op=="+")ans.append("\tadd ");
+					else if(o.op=="-")ans.append("\tsub ");
+					else if(o.op=="&")ans.append("\tand ");
+					else if(o.op=="|")ans.append("\tor ");
+					else if(o.op=="^")ans.append("\txor ");
 					else throw new Exception();
-					ans+=varstring(cc)+","+varstring(o.b)+"\n";
-					if(cc<=4)ans+="\tmov "+varstring(o.c)+","+regname[cc]+"\n";
+					ans.append(varstring(cc)+","+varstring(o.b)+"\n");
+					if(cc<=4)ans.append("\tmov "+varstring(o.c)+","+regname[cc]+"\n");
 				}
 				else if(o.op=="<"||o.op==">"||o.op=="<="||o.op==">="||o.op=="=="||o.op=="!="){
 					int aa=o.a,bb=o.b;
 					if(vkind.get(aa)=="global"||vkind.get(aa)=="stack")
 						bb=toregister(bb);
 					int zz=(lastregister^=rand.nextInt(3)+1)+1;
-					ans+="\txor "+regname[zz]+","+regname[zz]+"\n";
-					ans+="\tcmp "+varstring(aa)+","+varstring(bb)+"\n";
-					if(o.op=="<")ans+="\tsetl ";
-					else if(o.op=="<=")ans+="\tsetle ";
-					else if(o.op==">")ans+="\tsetg ";
-					else if(o.op==">=")ans+="\tsetge ";
-					else if(o.op=="==")ans+="\tsete ";
-					else if(o.op=="!=")ans+="\tsetne ";
+					ans.append("\txor "+regname[zz]+","+regname[zz]+"\n");
+					ans.append("\tcmp "+varstring(aa)+","+varstring(bb)+"\n");
+					if(o.op=="<")ans.append("\tsetl ");
+					else if(o.op=="<=")ans.append("\tsetle ");
+					else if(o.op==">")ans.append("\tsetg ");
+					else if(o.op==">=")ans.append("\tsetge ");
+					else if(o.op=="==")ans.append("\tsete ");
+					else if(o.op=="!=")ans.append("\tsetne ");
 					else throw new Exception();
-					ans+=regname[zz].charAt(1)+"l\n";
-					ans+="\tmov "+varstring(o.c)+","+regname[zz]+"\n";
+					ans.append(regname[zz].charAt(1)+"l\n");
+					ans.append("\tmov "+varstring(o.c)+","+regname[zz]+"\n");
 				}
 				else if(o.op=="*"){
-					ans+="\tmov rax,"+varstring(o.a)+"\n";
-					ans+="\timul "+varstring(o.b)+"\n";
-					ans+="\tmov "+varstring(o.c)+",rax\n";
+					ans.append("\tmov rax,"+varstring(o.a)+"\n");
+					ans.append("\timul "+varstring(o.b)+"\n");
+					ans.append("\tmov "+varstring(o.c)+",rax\n");
 				}
 				else if(o.op=="/"||o.op=="%"){
-					ans+="\tmov rdx,0\n";
-					ans+="\tmov rax,"+varstring(o.a)+"\n";
-					ans+="\tdiv "+varstring(o.b)+"\n";
-					ans+="\tmov "+varstring(o.c)+","+(o.op=="/"?"rax\n":"rdx\n");
+					ans.append("\tmov rdx,0\n");
+					ans.append("\tmov rax,"+varstring(o.a)+"\n");
+					ans.append("\tdiv "+varstring(o.b)+"\n");
+					ans.append("\tmov "+varstring(o.c)+","+(o.op=="/"?"rax\n":"rdx\n"));
 				}
 				else if(o.op=="<<"||o.op==">>"){
 					int cc=vkind.get(o.c)=="global"||vkind.get(o.c)=="stack"?(lastregister=2^(rand.nextInt(3)+1))+1:o.c;
-					ans+="\tmov "+varstring(cc)+","+varstring(o.a)+"\n";
-					ans+="\tmov rcx,"+varstring(o.b)+"\n";
-					ans+=(o.op=="<<"?"\tshl ":"\tshr ")+varstring(cc)+",cl\n";
-					if(cc<=4)ans+="\tmov "+varstring(o.c)+","+regname[cc]+"\n";
+					ans.append("\tmov "+varstring(cc)+","+varstring(o.a)+"\n");
+					ans.append("\tmov rcx,"+varstring(o.b)+"\n");
+					ans.append((o.op=="<<"?"\tshl ":"\tshr ")+varstring(cc)+",cl\n");
+					if(cc<=4)ans.append("\tmov "+varstring(o.c)+","+regname[cc]+"\n");
 				}
 				else if(o.op=="++"||o.op=="--"||o.op=="neg"||o.op=="!"||o.op=="~"){
 					int cc=toregister(o.c);
-					if(o.op=="++")ans+="\tinc ";
-					else if(o.op=="--")ans+="\tdec ";
-					else if(o.op=="!")ans+="\txor "+varstring(cc)+",1\n";
-					else if(o.op=="~")ans+="\tnot ";
-					else if(o.op=="neg")ans+="\tneg ";
+					if(o.op=="++")ans.append("\tinc ");
+					else if(o.op=="--")ans.append("\tdec ");
+					else if(o.op=="!")ans.append("\txor "+varstring(cc)+",1\n");
+					else if(o.op=="~")ans.append("\tnot ");
+					else if(o.op=="neg")ans.append("\tneg ");
 					else throw new Exception();
-					if(o.op!="!")ans+=varstring(cc)+"\n";
-					if(cc<=4)ans+="\tmov "+varstring(o.c)+","+regname[cc]+"\n";
+					if(o.op!="!")ans.append(varstring(cc)+"\n");
+					if(cc<=4)ans.append("\tmov "+varstring(o.c)+","+regname[cc]+"\n");
 				}
 				else throw new Exception();
 			}
 		}
 		reader=new BufferedReader(new FileReader("./builtin2.txt"));
 		for(String line;(line=reader.readLine())!=null;)
-			ans+=line+"\n";
+			ans.append(line+"\n");
 		for(int i=0;i<conststr.size();i++){
-			ans+="S"+(i+1)+":\n";
-			ans+="\tdb ";
+			ans.append("S"+(i+1)+":\n");
+			ans.append("\tdb ");
 			List<Integer>z=new ArrayList<Integer>();
 			boolean zy=false;
 			for(int j=1;j+1<conststr.get(i).length();j++){
@@ -1321,10 +1321,10 @@ public class Main{
 				else if(w=='\\')zy=true;
 				else z.add((int)w);
 			}
-			ans+=z.size();
+			ans.append(z.size()+"");
 			for(int j=0;j<z.size();j++)
-				ans+=","+z.get(j);
-			ans+=",0\n";
+				ans.append(","+z.get(j));
+			ans.append(",0\n");
 		}
 	}
 	static void regalloc(List<Code>ir){
@@ -1332,6 +1332,10 @@ public class Main{
 			vkind.put(i,"register");
 			vnum.put(i,i);
 		}
+		/*for(int i=1;i<=vart;i++)
+			if(vkind.get(i)==null){
+				
+			}*/
 		for(int i=0;i<ir.size();i++){
 			int j=i+1;
 			while(j<ir.size()&&ir.get(j).op!="funclab")j++;
