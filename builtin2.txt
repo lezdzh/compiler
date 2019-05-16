@@ -1,0 +1,28 @@
+section .bss
+gbl:
+	resb 2096
+buff.1788:
+	resb 256
+arg:
+	resb 1024
+trsp:
+	resb 1024
+s.1809:
+	resb 1
+ML_31:
+	resb 319
+mem.1758:
+	resb 536870912
+
+section .data
+formatln:
+	db  "%s",10,0
+format:
+	db  "%s",0
+GS_31:
+	db 25H,6CH,64H,00H
+GS_32:
+	db 25H,73H,00H
+ML_32:
+	db 25H,6CH,64H,00H
+
