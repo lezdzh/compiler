@@ -1368,7 +1368,7 @@ public class Main{
 						graph[0].add(w);
 			}
 			int z=0;
-			if(vart*ir.size()<10000000){
+			if(graph[0].size()*(j-i)<10000000){
 				for(int v:graph[0]){
 					System.out.printf(v+"\n");
 					graph[v]=new TreeSet<Integer>();
