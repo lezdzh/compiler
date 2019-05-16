@@ -1127,7 +1127,7 @@ public class Main{
 		return now;
 	}
 	static void codegen(List<Code>ir)throws Exception{
-		BufferedReader reader=new BufferedReader(new FileReader("builtin1.txt"));
+		BufferedReader reader=new BufferedReader(new FileReader("./builtin1.txt"));
 		for(String line;(line=reader.readLine())!=null;)
 			ans+=line+"\n";
 		for(int i=0;i<ir.size();i++){
@@ -1299,7 +1299,7 @@ public class Main{
 				else throw new Exception();
 			}
 		}
-		reader=new BufferedReader(new FileReader("builtin2.txt"));
+		reader=new BufferedReader(new FileReader("./builtin2.txt"));
 		for(String line;(line=reader.readLine())!=null;)
 			ans+=line+"\n";
 		for(int i=0;i<conststr.size();i++){
@@ -1359,9 +1359,8 @@ public class Main{
 		}
 	}
 	public static void main(String[] args)throws IOException,Exception{
-		InputStream is=new FileInputStream("test/test.txt");
 		System.setOut(new PrintStream(new FileOutputStream(new File("./test/debug.txt"))));
-		Node root=visit((new mxstarParser(new CommonTokenStream(new mxstarLexer(new ANTLRInputStream(is))))).code());
+		Node root=visit((new mxstarParser(new CommonTokenStream(new mxstarLexer(new ANTLRInputStream(new FileInputStream("./test/test.txt")))))).code());
 		check(root);
 		regalloc(root.ir);
 		codegen(root.ir);
