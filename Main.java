@@ -294,7 +294,7 @@ public class Main{
 		}
 	}
 	static List<Node>ancestor=new ArrayList<Node>();
-	static int funct,vart=20,labt,globalvart,conststringt;
+	static int funct,vart=16,labt,globalvart,conststringt;
 	static boolean addr;
 	static Map<Integer,String>vkind=new TreeMap<Integer,String>();
 	static Map vnum=new TreeMap();
@@ -603,7 +603,7 @@ public class Main{
 						vnum.put(v1,8*fa.scope.get(now.names.get(i)).id);
 						z.ir.addAll(now.expr.get(i).ir);
 						z.ir.add(new Code("+",v2,z.ans,v1));
-						z.ir.add(new Code("save",v2,now.expr.get(i).ans,0));
+						z.ir.add(new Code("save",0,v2,now.expr.get(i).ans));
 					}
 					else if(fa.kind=="code"){
 						Node z=fa.defs.get(fa.defs.size()-1);
@@ -663,7 +663,7 @@ public class Main{
 			for(Node i:now.stmts)
 				check(i);
 			now.ir.addAll(now.expr.get(0).ir);
-			now.ir.add(new Code("test",now.expr.get(0).ans,0,0));
+			now.ir.add(new Code("test",0,now.expr.get(0).ans,0));
 			now.ir.add(new Code("jnz",lab+1,0,0));
 			if(now.stmts.size()==2)
 				now.ir.addAll(now.stmts.get(1).ir);
@@ -682,7 +682,7 @@ public class Main{
 			check(now.stmts.get(0));
 			now.ir.add(new Code("label",lab+2,0,0));
 			now.ir.addAll(now.expr.get(0).ir);
-			now.ir.add(new Code("test",now.expr.get(0).ans,0,0));
+			now.ir.add(new Code("test",0,now.expr.get(0).ans,0));
 			now.ir.add(new Code("jz",lab+1,0,0));
 			now.ir.addAll(now.stmts.get(0).ir);
 			now.ir.add(new Code("label",lab+3,0,0));
@@ -703,7 +703,7 @@ public class Main{
 			now.ir.add(new Code("label",lab+2,0,0));
 			if(now.expr.get(1)!=null){
 				now.ir.addAll(now.expr.get(1).ir);
-				now.ir.add(new Code("test",now.expr.get(1).ans,0,0));
+				now.ir.add(new Code("test",0,now.expr.get(1).ans,0));
 				now.ir.add(new Code("jz",lab+1,0,0));
 			}
 			now.ir.addAll(now.stmts.get(0).ir);
@@ -856,11 +856,11 @@ public class Main{
 				for(int i=1;i<now.expr.size();i++)
 					now.ir.addAll(now.expr.get(i).ir);
 				if(f.kind=="expr")
-					now.ir.add(new Code("send",f.expr.get(0).ans,0,0));
+					now.ir.add(new Code("send",0,f.expr.get(0).ans,0));
 				else if(ancestor.get(1).kind=="classdef"&&ancestor.get(1).scope.get(f.id)!=null)
-					now.ir.add(new Code("send",ancestor.get(2).ans,0,0));
+					now.ir.add(new Code("send",0,ancestor.get(2).ans,0));
 				for(int i=1;i<now.expr.size();i++)
-					now.ir.add(new Code("send",now.expr.get(i).ans,0,0));
+					now.ir.add(new Code("send",0,now.expr.get(i).ans,0));
 				now.ir.add(new Code("call",f.ans,0,0));
 				now.ir.add(new Code("mov",++vart,1,0));
 				now.ans=vart;
@@ -923,7 +923,7 @@ public class Main{
 							now.ir.add(ir0+3,new Code("<",++vart,v1,v0+i));
 							now.ir.add(ir0+4,new Code("jz",labt,0,0));
 							now.ir.add(new Code("lea",++vart,vv0+i,v1));
-							now.ir.add(new Code("save",vart,vv0+i+1,0));
+							now.ir.add(new Code("save",0,vart,vv0+i+1));
 							now.ir.add(new Code("++",v1,0,0));
 							now.ir.add(new Code("jmp",labt-1,0,0));
 							now.ir.add(new Code("label",labt,0,0));
@@ -936,7 +936,7 @@ public class Main{
 					vkind.put(v2,"const");
 					vnum.put(v2,8*d.id);
 					now.ir.add(new Code("malloc",v1,v2,0));
-					now.ir.add(new Code("send",v1,0,0));
+					now.ir.add(new Code("send",0,v1,0));
 					now.ir.add(new Code("call",d.defs.get(now.names.get(0)).id,0,0));
 					now.ans=v1;
 				}
@@ -970,14 +970,14 @@ public class Main{
 						int v1=++vart,v2=++vart;
 						now.ir.add(new Code("load",v1,now.expr.get(0).ans,0));
 						now.ir.add(new Code("mov",v2,v1,0));
-						now.ir.add(new Code(now.id=="++_"?"++":"--",v1,0,0));
-						now.ir.add(new Code("save",now.expr.get(0).ans,v1,0));
+						now.ir.add(new Code(now.id=="++_"?"++":"--",v1,v1,0));
+						now.ir.add(new Code("save",0,now.expr.get(0).ans,v1));
 						now.ans=v2;
 					}
 					else{
 						int v1=++vart;
 						now.ir.add(new Code("mov",v1,now.expr.get(0).ans,0));
-						now.ir.add(new Code(now.id=="++_"?"++":"--",now.expr.get(0).ans,0,0));
+						now.ir.add(new Code(now.id=="++_"?"++":"--",now.expr.get(0).ans,now.expr.get(0).ans,0));
 						now.ans=v1;
 					}
 				}
@@ -985,20 +985,20 @@ public class Main{
 					if(now.expr.get(0).ismem){
 						int v1=++vart;
 						now.ir.add(new Code("load",v1,now.expr.get(0).ans,0));
-						now.ir.add(new Code(now.id,v1,0,0));
-						now.ir.add(new Code("save",now.expr.get(0).ans,v1,0));
+						now.ir.add(new Code(now.id,v1,v1,0));
+						now.ir.add(new Code("save",0,now.expr.get(0).ans,v1));
 						now.ans=now.expr.get(0).ans;
 						now.ismem=true;
 					}
 					else{
-						now.ir.add(new Code(now.id,now.expr.get(0).ans,0,0));
+						now.ir.add(new Code(now.id,now.expr.get(0).ans,now.expr.get(0).ans,0));
 						now.ans=now.expr.get(0).ans;
 					}
 				}
 				else{
 					if(now.id!="+")
-						if(now.id!="-")now.ir.add(new Code(now.id,now.expr.get(0).ans,0,0));
-						else now.ir.add(new Code("neg",now.expr.get(0).ans,0,0));
+						if(now.id!="-")now.ir.add(new Code(now.id,now.expr.get(0).ans,now.expr.get(0).ans,0));
+						else now.ir.add(new Code("neg",now.expr.get(0).ans,now.expr.get(0).ans,0));
 					now.ans=now.expr.get(0).ans;
 				}
 				if(now.ismem&&!addr){
@@ -1045,7 +1045,7 @@ public class Main{
 					int lab=labt,v=++vart;
 					labt+=2;
 					now.ir.addAll(now.expr.get(0).ir);
-					now.ir.add(new Code("test",now.expr.get(0).ans,0,0));
+					now.ir.add(new Code("test",0,now.expr.get(0).ans,0));
 					now.ir.add(new Code("jnz",lab+1,0,0));
 					if(o=="&&"){
 						int vv=++vart;
@@ -1076,7 +1076,7 @@ public class Main{
 					now.ir.addAll(now.expr.get(0).ir);
 					now.ir.addAll(now.expr.get(1).ir);
 					if(now.expr.get(0).ismem)
-						now.ir.add(new Code("save",now.expr.get(0).ans,now.expr.get(1).ans,0));
+						now.ir.add(new Code("save",0,now.expr.get(0).ans,now.expr.get(1).ans));
 					else now.ir.add(new Code("mov",now.expr.get(0).ans,now.expr.get(1).ans,0));
 					now.ans=now.expr.get(0).ans;
 					now.ismem=now.expr.get(0).ismem;
@@ -1088,8 +1088,8 @@ public class Main{
 				else if((o=="+"||o==">"||o=="<"||o==">="||o=="<="||o=="=="||o=="!=")&&now.expr.get(0).type.equal(new Type("string"))){
 					now.ir.addAll(now.expr.get(0).ir);
 					now.ir.addAll(now.expr.get(1).ir);
-					now.ir.add(new Code("send",now.expr.get(0).ans,0,0));
-					now.ir.add(new Code("send",now.expr.get(1).ans,0,0));
+					now.ir.add(new Code("send",0,now.expr.get(0).ans,0));
+					now.ir.add(new Code("send",0,now.expr.get(1).ans,0));
 					now.ir.add(new Code("call",ancestor.get(0).scope.get("string"+o).id,0,0));
 					now.ir.add(new Code("mov",++vart,1,0));
 					now.ans=vart;
@@ -1132,13 +1132,6 @@ public class Main{
 			ans.append(line+"\n");
 		for(int i=0;i<ir.size();i++){
 			Code o=ir.get(i);
-			if(o.op.equals("")){
-				System.out.printf("\n");
-			}
-			else{
-				System.out.print(o.op);
-				System.out.printf(" %d %d %d\n",o.c,o.a,o.b);
-			}
 			if(o.op==""){
 				ans.append("\n");
 			}
@@ -1156,7 +1149,7 @@ public class Main{
 				int j=i;
 				while(ir.get(j).op=="send")j++;
 				for(int w=i;w<j;w++){
-					int cc=toregister(ir.get(w).c);
+					int cc=toregister(ir.get(w).a);
 					ans.append("\tmov "+(w<=i+1?regname[w-i+7]:"qword[arg+"+8*(w-i-1)+"]")+","+varstring(cc)+"\n");
 				}
 				i=j-1;
@@ -1172,6 +1165,8 @@ public class Main{
 				i=j-1;
 			}
 			else if(o.op=="call"){
+				for(int j=8;j<=15;j++)
+					ans.append("\tpush r"+j+"\n");
 				if(o.c==1){
 					ans.append("\txor rax,rax\n");
 					ans.append("\tmov al,byte[rdi]\n");
@@ -1191,13 +1186,15 @@ public class Main{
 					ans.append("\tcall "+ss[o.c]+"\n");
 				}
 				else ans.append("\tcall F"+o.c+"\n");
+				for(int j=15;j>=8;j--)
+					ans.append("\tpop r"+j+"\n");
 			}
 			else if(o.op=="ret"){
 				ans.append("\tleave\n");
 				ans.append("\tret\n");
 			}
 			else if(o.op=="save"){
-				int cc=toregister(o.c),aa=toregister(o.a);
+				int cc=toregister(o.a),aa=toregister(o.b);
 				ans.append("\tmov qword["+varstring(cc)+"],"+varstring(aa)+"\n");
 			}
 			else if(o.op=="load"){
@@ -1222,7 +1219,11 @@ public class Main{
 				ans.append("\tmov rdi,"+varstring(o.a)+"\n");
 				ans.append("\tshl rdi,3\n");
 				ans.append("\tadd rdi,8\n");
+				for(int j=8;j<=15;j++)
+					ans.append("\tpush r"+j+"\n");
 				ans.append("\tcall malloc\n");
+				for(int j=15;j>=8;j--)
+					ans.append("\tpop r"+j+"\n");
 				ans.append("\tmov "+varstring(o.c)+",rax\n");
 				ans.append("\tmov "+regname[(lastregister=rand.nextInt(3)+1)+1]+","+varstring(o.a)+"\n");
 				ans.append("\tmov qword[rax],"+regname[lastregister+1]+"\n");
@@ -1234,12 +1235,12 @@ public class Main{
 				ans.append("\t"+o.op+" L"+o.c+"\n");
 			}
 			else if(o.op=="test"){
-				int cc=toregister(o.c);
+				int cc=toregister(o.a);
 				ans.append("\ttest "+varstring(cc)+","+varstring(cc)+"\n");
 			}
 			else{
 				if(o.op=="+"||o.op=="-"||o.op=="&"||o.op=="|"||o.op=="^"){
-					int cc=vkind.get(o.c)=="global"||vkind.get(o.c)=="stack"?(lastregister^=rand.nextInt(3)+1)+1:o.c;
+					int cc=vkind.get(o.c)=="global"||vkind.get(o.c)=="stack"||varstring(o.c).equals(varstring(o.a))||varstring(o.c).equals(varstring(o.b))?(lastregister^=rand.nextInt(3)+1)+1:o.c;
 					ans.append("\tmov "+varstring(cc)+","+varstring(o.a)+"\n");
 					if(o.op=="+")ans.append("\tadd ");
 					else if(o.op=="-")ans.append("\tsub ");
@@ -1279,7 +1280,7 @@ public class Main{
 					ans.append("\tmov "+varstring(o.c)+","+(o.op=="/"?"rax\n":"rdx\n"));
 				}
 				else if(o.op=="<<"||o.op==">>"){
-					int cc=vkind.get(o.c)=="global"||vkind.get(o.c)=="stack"?(lastregister=2^(rand.nextInt(3)+1))+1:o.c;
+					int cc=vkind.get(o.c)=="global"||vkind.get(o.c)=="stack"||varstring(o.c).equals(varstring(o.a))||varstring(o.c).equals(varstring(o.b))?(lastregister=2^(rand.nextInt(3)+1))+1:o.c;
 					ans.append("\tmov "+varstring(cc)+","+varstring(o.a)+"\n");
 					ans.append("\tmov rcx,"+varstring(o.b)+"\n");
 					ans.append((o.op=="<<"?"\tshl ":"\tshr ")+varstring(cc)+",cl\n");
@@ -1327,39 +1328,133 @@ public class Main{
 			ans.append(",0\n");
 		}
 	}
+	static Set<Integer>[]occur,graph;
+	static int[]labpos,vis;
+	static Set<Integer>[]from;
+	static boolean hasvar(Code o){
+		return!(o.op=="funclab"||o.op=="label"||o.op=="jz"||o.op=="jnz"||o.op=="jmp"||o.op=="call"||o.op=="ret");
+	}
+	static void dfs(int u){
+		vis[u]=1;
+		for(int v:from[u])
+			if(vis[v]==0)dfs(v);
+	}
 	static void regalloc(List<Code>ir){
 		for(int i=1;i<=16;i++){
 			vkind.put(i,"register");
 			vnum.put(i,i);
 		}
-		/*for(int i=1;i<=vart;i++)
-			if(vkind.get(i)==null){
-				
-			}*/
+		occur=new Set[ir.size()];
+		graph=new Set[vart+1];
+		labpos=new int[ir.size()];
+		vis=new int[ir.size()];
+		from=new Set[ir.size()];
+		System.out.printf("%d %d!!!!!!!!!!!!!!!!!!!!!!!!!!!\n",vart,ir.size());
+		for(int i=0;i<ir.size();i++){
+			occur[i]=new TreeSet<Integer>();
+			if(ir.get(i).op=="label")
+				labpos[ir.get(i).c]=i;
+		}
 		for(int i=0;i<ir.size();i++){
 			int j=i+1;
 			while(j<ir.size()&&ir.get(j).op!="funclab")j++;
+			graph[0]=new TreeSet<Integer>();
+			for(int k=i+1;k<j;k++){
+				Code o=ir.get(k);
+				if(!hasvar(o))continue;
+				int v[]={o.c,o.a,o.b};
+				for(int w:v)
+					if(w!=0&&vkind.get(w)==null)
+						graph[0].add(w);
+			}
 			int z=0;
-			for(int k=i;k<j;k++){
-				String op=ir.get(k).op;
-				if(op=="funclab"||op=="label"||op=="jz"||op=="jnz"||op=="jmp"||op=="call")
-					continue;
-				int c=ir.get(k).c,a=ir.get(k).a,b=ir.get(k).b;
-				if(c!=0&&vkind.get(c)==null){
-					vkind.put(c,"stack");
-					vnum.put(c,8*(++z));
+			if(vart*ir.size()<10000000){
+				for(int v:graph[0]){
+					System.out.printf(v+"\n");
+					graph[v]=new TreeSet<Integer>();
+					for(int k=i+1;k<j;k++){
+						vis[k]=0;
+						from[k]=new TreeSet<Integer>();
+					}
+					for(int k=i+1;k<j;k++){
+						Code o=ir.get(k);
+						if(hasvar(o)&&o.c==v)
+							continue;
+						if(o.op!="ret"&&o.op!="jmp"&&o.op!="")
+							from[k+1].add(k);
+						if(o.op=="jz"||o.op=="jnz"||o.op=="jmp")
+							from[labpos[o.c]+1].add(k);
+					}
+					for(int k=i+1;k<j;k++)
+						if(hasvar(ir.get(k))&&(ir.get(k).a==v||ir.get(k).b==v))
+							dfs(k);
+					for(int k=i+1;k<j;k++)
+						if(vis[k]==1)occur[k].add(v);
 				}
-				if(a!=0&&vkind.get(a)==null){
-					vkind.put(a,"stack");
-					vnum.put(a,8*(++z));
+				for(int k=i+1;k<j;k++)
+					for(int p:occur[k])
+						for(int q:occur[k])
+							if(p!=q)graph[p].add(q);
+				List<Integer>stack=new ArrayList<Integer>();
+				for(;;){
+					if(graph[0].size()==0)break;
+					int vv=0,sz=2000000000;
+					for(int v:graph[0])
+						if(graph[v].size()<sz)
+							sz=graph[vv=v].size();
+					if(sz<8)stack.add(vv);
+					else{
+						sz=0;
+						for(int v:graph[0])
+							if(graph[v].size()>sz)
+								sz=graph[vv=v].size();
+						vkind.put(vv,"stack");
+						vnum.put(vv,8*(++z));
+					}
+					for(int v:graph[vv])
+						graph[v].remove(vv);
+					graph[0].remove(vv);
 				}
-				if(b!=0&&vkind.get(b)==null){
-					vkind.put(b,"stack");
-					vnum.put(b,8*(++z));
+				for(;stack.size()!=0;){
+					int[]used=new int[17];
+					int u=stack.get(stack.size()-1);
+					stack.remove(stack.size()-1);
+					for(int v:graph[u])
+						if(vkind.get(v)=="register")
+							used[(int)vnum.get(v)]=1;
+					for(int v=9;v<=16;v++)
+						if(used[v]==0)used[++used[0]]=v;
+					vkind.put(u,"register");
+					vnum.put(u,used[rand.nextInt(used[0])+1]);
 				}
+				for(int k=0;k<ir.size();k++){
+					Code o=ir.get(k);
+					if(hasvar(o)&&(vkind.get(o.c)=="register"||vkind.get(o.c)=="stack")&&o.c>16&&!occur[i+1].contains(o.c))
+						ir.set(k,new Code("",0,0,0));
+				}
+			}
+			else for(int v:graph[0]){
+				vkind.put(v,"stack");
+				vnum.put(v,8*(++z));
 			}
 			ir.get(i).a=8*z+8;
 			i=j-1;
+		}
+		for(int i=1;i<=vart;i++)
+			if(vkind.get(i)!=null)
+				System.out.print(i+" "+vkind.get(i)+" "+(int)vnum.get(i)+"\n");
+		System.out.printf("\n");
+		for(int i=0;i<ir.size();i++){
+			Code o=ir.get(i);
+			if(o.op.equals(""))
+				System.out.printf("\n");
+			else{
+				System.out.print(o.op);
+				System.out.printf(" %d %d %d:",o.c,o.a,o.b);
+				for(int v:occur[i])
+					System.out.printf(" %d",v);
+				System.out.printf("\n");
+			}
 		}
 	}
 	public static void main(String[] args)throws IOException,Exception{
