@@ -998,9 +998,9 @@ public class Main{
 				}
 				else{
 					if(now.id!="+")
-						if(now.id!="-")now.ir.add(new Code(now.id,now.expr.get(0).ans,now.expr.get(0).ans,0));
-						else now.ir.add(new Code("neg",now.expr.get(0).ans,now.expr.get(0).ans,0));
-					now.ans=now.expr.get(0).ans;
+						if(now.id!="-")now.ir.add(new Code(now.id,++vart,now.expr.get(0).ans,0));
+						else now.ir.add(new Code("neg",++vart,now.expr.get(0).ans,0));
+					now.ans=vart;
 				}
 				if(now.ismem&&!addr){
 					now.ir.add(new Code("load",++vart,now.ans,0));
@@ -1297,6 +1297,8 @@ public class Main{
 				}
 				else if(o.op=="++"||o.op=="--"||o.op=="neg"||o.op=="!"||o.op=="~"){
 					int cc=toregister(o.c);
+					if(!varstring(cc).equals(varstring(o.a)))
+						ans.append("\tmov "+varstring(cc)+","+varstring(o.a)+"\n");
 					if(o.op=="++")ans.append("\tinc ");
 					else if(o.op=="--")ans.append("\tdec ");
 					else if(o.op=="!")ans.append("\txor "+varstring(cc)+",1\n");
