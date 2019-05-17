@@ -15,9 +15,6 @@ public class Main{
 			name=o;
 		}
 		boolean equal(Type tmp){
-			//System.out.printf(name+"\n"+tmp.name+"\n"+array+"\n"+tmp.array+"\n%b\n",tmp.name==name&&tmp.array==array);
-			if(name.equals("void")!=tmp.name.equals("void"))
-				return false;
 			return tmp.name.equals(name)&&tmp.array==array||
 				tmp.name=="null"&&(array!=0||!name.equals("int")&&!name.equals("bool")&&!name.equals("string"))||
 				name=="null"&&(tmp.array!=0||!tmp.name.equals("int")&&!tmp.name.equals("bool")&&!tmp.name.equals("string"));
@@ -48,17 +45,9 @@ public class Main{
 			ir=new ArrayList<Code>();
 		}
 	}
-	static int t1,t2;
 	static Node visit(ParseTree now)throws Exception{
-		for(int i=1;i<=t1;i++)
-			System.out.printf("\t");
-		t1++;
-		System.out.print(now.getText());
-		System.out.printf(":");
-		//System.out.printf("???\n");
 		Node tmp=new Node();
 		if(now instanceof mxstarParser.CodeContext){
-			System.out.printf("code\n");
 			mxstarParser.CodeContext ctx=(mxstarParser.CodeContext)now;
 			tmp.kind="code";
 			tmp.isscope=true;
@@ -66,7 +55,6 @@ public class Main{
 				tmp.defs.add(visit(i));
 		}
 		else if(now instanceof mxstarParser.ClassdefContext){
-			System.out.printf("classdef\n");
 			mxstarParser.ClassdefContext ctx=(mxstarParser.ClassdefContext)now;
 			tmp.kind="classdef";
 			tmp.isscope=true;
@@ -75,7 +63,6 @@ public class Main{
 				tmp.defs.add(visit(ctx.getChild(i)));
 		}
 		else if(now instanceof mxstarParser.FuncdefContext){
-			System.out.printf("func\n");
 			mxstarParser.FuncdefContext ctx=(mxstarParser.FuncdefContext)now;
 			tmp.kind="funcdef";
 			tmp.isscope=true;
@@ -89,7 +76,6 @@ public class Main{
 				tmp.stmts.add(visit(i));
 		}
 		else if(now instanceof mxstarParser.ConstructfuncdefContext){
-			System.out.printf("construct\n");
 			mxstarParser.ConstructfuncdefContext ctx=(mxstarParser.ConstructfuncdefContext)now;
 			tmp.kind="construct";
 			tmp.isscope=true;
@@ -98,7 +84,6 @@ public class Main{
 				tmp.stmts.add(visit(i));
 		}
 		else if(now instanceof mxstarParser.VardefContext){
-			System.out.printf("vardef\n");
 			mxstarParser.VardefContext ctx=(mxstarParser.VardefContext)now;
 			tmp.kind="vardef";
 			tmp.type=new Type(ctx.type());
@@ -112,7 +97,6 @@ public class Main{
 			}
 		}
 		else if(now instanceof mxstarParser.StatementContext){
-			System.out.printf("statement\n");
 			if(now instanceof mxstarParser.S1Context){
 				mxstarParser.S1Context ctx=(mxstarParser.S1Context)now;
 				tmp.kind="braces";
@@ -176,7 +160,6 @@ public class Main{
 			else throw new Exception();
 		}
 		else if(now instanceof mxstarParser.ExprContext){
-			System.out.printf("expr\n");
 			if(now instanceof mxstarParser.E0Context||
 				now instanceof mxstarParser.E1Context||
 				now instanceof mxstarParser.E2Context||
@@ -272,7 +255,6 @@ public class Main{
 			}
 		}
 		else throw new Exception();
-		t1--;
 		return tmp;
 	}
 	static class Def{
@@ -302,10 +284,6 @@ public class Main{
 	static int lastregister;
 	static Random rand=new Random();
 	static void check(Node now)throws Exception{
-		for(int i=1;i<=t2;i++)
-			System.out.printf("\t");
-		t2++;
-		System.out.printf(now.kind+"\n");
 		ancestor.add(now);
 		if(now.kind=="code"){
 			{
@@ -796,7 +774,6 @@ public class Main{
 				}
 				else now.ans=d.id;
 			}
-			System.out.printf("type/const:"+now.type.name+"\n");
 		}
 		else if(now.kind=="expr"){
 			if(now.id=="."){
@@ -1149,10 +1126,8 @@ public class Main{
 					}
 				}
 			}
-			System.out.printf("type/expr:"+now.type.name+"\n");
 		}
 		ancestor.remove(ancestor.size()-1);
-		t2--;
 	}
 	static String regname[]={"","rax","rbx","rcx","rdx","rbp","rsp","rdi","rsi","r8","r9","r10","r11","r12","r13","r14","r15"};
 	static StringBuffer ans=new StringBuffer();
@@ -1407,7 +1382,6 @@ public class Main{
 		labpos=new int[ir.size()];
 		vis=new int[ir.size()];
 		from=new Set[ir.size()];
-		System.out.printf("%d %d!\n",vart,ir.size());
 		for(int i=0;i<ir.size();i++){
 			occur[i]=new TreeSet<Integer>();
 			from[i]=new TreeSet<Integer>();
@@ -1429,7 +1403,6 @@ public class Main{
 			int z=0;
 			if(graph[0].size()*(j-i)<10000000){
 				for(int v:graph[0]){
-					System.out.printf(v+"\n");
 					graph[v]=new TreeSet<Integer>();
 					for(int k=i+1;k<j;k++){
 						vis[k]=0;
@@ -1466,10 +1439,6 @@ public class Main{
 							sz=graph[vv=v].size();
 					if(sz<8)stack.add(vv);
 					else{
-						sz=0;
-						for(int v:graph[0])
-							if(graph[v].size()>sz)
-								sz=graph[vv=v].size();
 						vkind.put(vv,"stack");
 						vnum.put(vv,8*(++z));
 					}
@@ -1491,13 +1460,6 @@ public class Main{
 				}
 				for(int k=i;k<j;k++){
 					Code o=ir.get(k);
-					if(o.op!=""){
-						System.out.print(o.op);
-						System.out.printf(" %d %d %d:",o.c,o.a,o.b);
-						for(int v:occur[k])
-							System.out.printf(" %d",v);
-					}
-					System.out.printf("\n");
 					if(hasvar(o)&&(vkind.get(o.c)=="register"||vkind.get(o.c)=="stack")&&o.c>16&&!occur[k+1].contains(o.c))
 						ir.set(k,new Code("",0,0,0));
 					if(o.op=="mov"&&varstring(o.c).equals(varstring(o.a)))
@@ -1511,12 +1473,8 @@ public class Main{
 			ir.get(i).a=8*z+8;
 			i=j-1;
 		}
-		for(int i=1;i<=vart;i++)
-			if(vkind.get(i)!=null)
-				System.out.print(i+" "+vkind.get(i)+" "+(int)vnum.get(i)+"\n");
 	}
 	public static void main(String[] args)throws IOException,Exception{
-		System.setOut(new PrintStream(new FileOutputStream(new File("./test/debug.txt"))));
 		Node root=visit((new mxstarParser(new CommonTokenStream(new mxstarLexer(new ANTLRInputStream(new FileInputStream("./test/test.txt")))))).code());
 		check(root);
 		regalloc(root.ir);
