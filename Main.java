@@ -1439,6 +1439,10 @@ public class Main{
 							sz=graph[vv=v].size();
 					if(sz<8)stack.add(vv);
 					else{
+						sz=0;
+						for(int v:graph[0])
+							if(graph[v].size()>sz)
+								sz=graph[vv=v].size();
 						vkind.put(vv,"stack");
 						vnum.put(vv,8*(++z));
 					}
