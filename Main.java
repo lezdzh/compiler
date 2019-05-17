@@ -921,10 +921,11 @@ public class Main{
 							now.ir.add(ir0+1,new Code("mov",v1,v2,0));
 							now.ir.add(ir0+2,new Code("label",labt-1,0,0));
 							now.ir.add(ir0+3,new Code("<",++vart,v1,v0+i));
-							now.ir.add(ir0+4,new Code("jz",labt,0,0));
+							now.ir.add(ir0+4,new Code("test",0,vart,0));
+							now.ir.add(ir0+5,new Code("jz",labt,0,0));
 							now.ir.add(new Code("lea",++vart,vv0+i,v1));
 							now.ir.add(new Code("save",0,vart,vv0+i+1));
-							now.ir.add(new Code("++",v1,0,0));
+							now.ir.add(new Code("++",v1,v1,0));
 							now.ir.add(new Code("jmp",labt-1,0,0));
 							now.ir.add(new Code("label",labt,0,0));
 						}
@@ -1350,7 +1351,7 @@ public class Main{
 		labpos=new int[ir.size()];
 		vis=new int[ir.size()];
 		from=new Set[ir.size()];
-		System.out.printf("%d %d!!!!!!!!!!!!!!!!!!!!!!!!!!!\n",vart,ir.size());
+		System.out.printf("%d %d!\n",vart,ir.size());
 		for(int i=0;i<ir.size();i++){
 			occur[i]=new TreeSet<Integer>();
 			from[i]=new TreeSet<Integer>();
@@ -1371,7 +1372,7 @@ public class Main{
 			}
 			int z=0;
 			if(graph[0].size()*(j-i)<10000000){
-				System.out.printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
+				System.out.printf("@@@\n");
 				for(int v:graph[0]){
 					System.out.printf(v+"\n");
 					graph[v]=new TreeSet<Integer>();
@@ -1391,10 +1392,11 @@ public class Main{
 					for(int k=i+1;k<j;k++)
 						if(hasvar(ir.get(k))&&(ir.get(k).a==v||ir.get(k).b==v)){
 							dfs(k);
-							System.out.printf("%d %b~~~~~~~~~~~~~~~~~~~~~\n",k,vis[k]);
 						}
 					for(int k=i+1;k<j;k++)
-						if(vis[k]==1)occur[k].add(v);
+						if(vis[k]==1){
+							occur[k].add(v);
+						}
 				}
 				for(int k=i+1;k<j;k++)
 					for(int p:occur[k])
@@ -1439,7 +1441,7 @@ public class Main{
 					else{
 						System.out.print(o.op);
 						System.out.printf(" %d %d %d:",o.c,o.a,o.b);
-						for(int v:occur[i])
+						for(int v:occur[k])
 							System.out.printf(" %d",v);
 						System.out.printf("\n");
 					}
