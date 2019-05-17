@@ -1127,6 +1127,7 @@ public class Main{
 		}
 		return now;
 	}
+	static Set<Integer>[]occur;
 	static void codegen(List<Code>ir)throws Exception{
 		BufferedReader reader=new BufferedReader(new FileReader("./builtin1.txt"));
 		for(String line;(line=reader.readLine())!=null;)
@@ -1166,8 +1167,14 @@ public class Main{
 				i=j-1;
 			}
 			else if(o.op=="call"){
-				for(int j=8;j<=15;j++)
-					ans.append("\tpush r"+j+"\n");
+				int[]used=new int[17];
+				if(o.c!=1&&o.c!=10){
+					for(int v:occur[i])
+						if(vkind.get(v)=="register")
+							used[(int)vnum.get(v)]=1;
+					for(int j=9;j<=16;j++)
+						if(used[j]==1)ans.append("\tpush "+varstring(j)+"\n");
+				}
 				if(o.c==1){
 					ans.append("\txor rax,rax\n");
 					ans.append("\tmov al,byte[rdi]\n");
@@ -1187,8 +1194,9 @@ public class Main{
 					ans.append("\tcall "+ss[o.c]+"\n");
 				}
 				else ans.append("\tcall F"+o.c+"\n");
-				for(int j=15;j>=8;j--)
-					ans.append("\tpop r"+j+"\n");
+				if(o.c!=1&&o.c!=10)
+					for(int j=16;j>=9;j--)
+						if(used[j]==1)ans.append("\tpop "+varstring(j)+"\n");
 			}
 			else if(o.op=="ret"){
 				ans.append("\tleave\n");
@@ -1329,7 +1337,7 @@ public class Main{
 			ans.append(",0\n");
 		}
 	}
-	static Set<Integer>[]occur,graph;
+	static Set<Integer>[]graph;
 	static int[]labpos,vis;
 	static Set<Integer>[]from;
 	static boolean hasvar(Code o){
@@ -1340,7 +1348,7 @@ public class Main{
 		for(int v:from[u])
 			if(vis[v]==0)dfs(v);
 	}
-	static void regalloc(List<Code>ir){
+	static void regalloc(List<Code>ir)throws Exception{
 		for(int i=1;i<=16;i++){
 			vkind.put(i,"register");
 			vnum.put(i,i);
@@ -1372,7 +1380,6 @@ public class Main{
 			}
 			int z=0;
 			if(graph[0].size()*(j-i)<10000000){
-				System.out.printf("@@@\n");
 				for(int v:graph[0]){
 					System.out.printf(v+"\n");
 					graph[v]=new TreeSet<Integer>();
@@ -1436,16 +1443,16 @@ public class Main{
 				}
 				for(int k=i;k<j;k++){
 					Code o=ir.get(k);
-					if(o.op.equals(""))
-						System.out.printf("\n");
-					else{
+					if(o.op!=""){
 						System.out.print(o.op);
 						System.out.printf(" %d %d %d:",o.c,o.a,o.b);
 						for(int v:occur[k])
 							System.out.printf(" %d",v);
-						System.out.printf("\n");
 					}
+					System.out.printf("\n");
 					if(hasvar(o)&&(vkind.get(o.c)=="register"||vkind.get(o.c)=="stack")&&o.c>16&&!occur[k+1].contains(o.c))
+						ir.set(k,new Code("",0,0,0));
+					if(o.op=="mov"&&varstring(o.c).equals(varstring(o.a)))
 						ir.set(k,new Code("",0,0,0));
 				}
 			}
