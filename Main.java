@@ -965,8 +965,8 @@ public class Main{
 				if(now.id=="++"||now.id=="--")
 					now.leftv=true;
 				now.type=type;
-				now.ir.addAll(now.expr.get(0).ir);
 				if(now.id=="++_"||now.id=="--_"){
+					now.ir.addAll(now.expr.get(0).ir);
 					if(now.expr.get(0).ismem){
 						int v1=++vart,v2=++vart;
 						now.ir.add(new Code("load",v1,now.expr.get(0).ans,0));
@@ -983,6 +983,7 @@ public class Main{
 					}
 				}
 				else if(now.id=="++"||now.id=="--"){
+					now.ir.addAll(now.expr.get(0).ir);
 					if(now.expr.get(0).ismem){
 						int v1=++vart;
 						now.ir.add(new Code("load",v1,now.expr.get(0).ans,0));
@@ -997,10 +998,28 @@ public class Main{
 					}
 				}
 				else{
-					if(now.id!="+")
-						if(now.id!="-")now.ir.add(new Code(now.id,++vart,now.expr.get(0).ans,0));
-						else now.ir.add(new Code("neg",++vart,now.expr.get(0).ans,0));
-					now.ans=vart;
+					Node l=now.expr.get(0);
+					if(l.kind=="const"&&l.ir.size()==1&&l.ir.get(0).op=="mov"){
+						int ll=(int)vnum.get(l.ir.get(0).a);
+						now.kind="const";
+						if(now.id=="+")ll=ll;
+						if(now.id=="-")ll=-ll;
+						if(now.id=="!")ll=ll^1;
+						if(now.id=="~")ll=~ll;
+						now.ans=++vart;
+						vkind.put(now.ans,"const");
+						vnum.put(now.ans,ll);
+						now.ir.add(new Code("mov",++vart,now.ans,0));
+						now.ans=vart;
+					}
+					else{
+						now.ir.addAll(now.expr.get(0).ir);
+						if(now.id!="+"){
+							now.ir.add(new Code(now.id=="-"?"neg":now.id,++vart,now.expr.get(0).ans,0));
+							now.ans=vart;
+						}
+						else now.ans=now.expr.get(0).ans;
+					}
 				}
 				if(now.ismem&&!addr){
 					now.ir.add(new Code("load",++vart,now.ans,0));
@@ -1096,11 +1115,38 @@ public class Main{
 					now.ans=vart;
 				}
 				else{
-					now.ir.addAll(now.expr.get(0).ir);
-					now.ir.addAll(now.expr.get(1).ir);
-					int v=++vart;
-					now.ir.add(new Code(now.id,v,now.expr.get(0).ans,now.expr.get(1).ans));
-					now.ans=v;
+					Node l=now.expr.get(0),r=now.expr.get(1);
+					if(l.kind=="const"&&r.kind=="const"&&l.ir.size()==1&&r.ir.size()==1&&l.ir.get(0).op=="mov"&&r.ir.get(0).op=="mov"){
+						int ll=(int)vnum.get(l.ir.get(0).a),rr=(int)vnum.get(r.ir.get(0).a);
+						now.kind="const";
+						if(now.id=="+")ll=ll+rr;
+						if(now.id=="-")ll=ll-rr;
+						if(now.id=="*")ll=ll*rr;
+						if(now.id=="/")ll=ll/rr;
+						if(now.id=="%")ll=ll%rr;
+						if(now.id=="<<")ll=ll<<rr;
+						if(now.id==">>")ll=ll>>rr;
+						if(now.id=="&")ll=ll&rr;
+						if(now.id=="|")ll=ll|rr;
+						if(now.id=="^")ll=ll^rr;
+						if(now.id=="<")ll=ll<rr?1:0;
+						if(now.id==">")ll=ll>rr?1:0;
+						if(now.id=="<=")ll=ll<=rr?1:0;
+						if(now.id==">=")ll=ll>=rr?1:0;
+						if(now.id=="==")ll=ll==rr?1:0;
+						if(now.id=="!=")ll=ll!=rr?1:0;
+						now.ans=++vart;
+						vkind.put(now.ans,"const");
+						vnum.put(now.ans,ll);
+						now.ir.add(new Code("mov",++vart,now.ans,0));
+						now.ans=vart;
+					}
+					else{
+						now.ir.addAll(l.ir);
+						now.ir.addAll(r.ir);
+						now.ir.add(new Code(now.id,++vart,l.ans,r.ans));
+						now.ans=vart;
+					}
 				}
 			}
 			System.out.printf("type/expr:"+now.type.name+"\n");
