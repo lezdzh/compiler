@@ -1224,9 +1224,9 @@ public class Main{
 				ans.append("\tcall malloc\n");
 				for(int j=15;j>=8;j--)
 					ans.append("\tpop r"+j+"\n");
-				ans.append("\tmov "+varstring(o.c)+",rax\n");
 				ans.append("\tmov "+regname[(lastregister=rand.nextInt(3)+1)+1]+","+varstring(o.a)+"\n");
 				ans.append("\tmov qword[rax],"+regname[lastregister+1]+"\n");
+				ans.append("\tmov "+varstring(o.c)+",rax\n");
 			}
 			else if(o.op=="jmp"){
 				ans.append("\tjmp L"+o.c+"\n");
@@ -1346,19 +1346,21 @@ public class Main{
 		}
 		occur=new Set[ir.size()];
 		graph=new Set[vart+1];
+		graph[0]=new TreeSet<Integer>();
 		labpos=new int[ir.size()];
 		vis=new int[ir.size()];
 		from=new Set[ir.size()];
 		System.out.printf("%d %d!!!!!!!!!!!!!!!!!!!!!!!!!!!\n",vart,ir.size());
 		for(int i=0;i<ir.size();i++){
 			occur[i]=new TreeSet<Integer>();
+			from[i]=new TreeSet<Integer>();
 			if(ir.get(i).op=="label")
 				labpos[ir.get(i).c]=i;
 		}
 		for(int i=0;i<ir.size();i++){
 			int j=i+1;
 			while(j<ir.size()&&ir.get(j).op!="funclab")j++;
-			graph[0]=new TreeSet<Integer>();
+			graph[0].clear();
 			for(int k=i+1;k<j;k++){
 				Code o=ir.get(k);
 				if(!hasvar(o))continue;
@@ -1369,12 +1371,13 @@ public class Main{
 			}
 			int z=0;
 			if(graph[0].size()*(j-i)<10000000){
+				System.out.printf("@@@@@@@@@@@@@@@@@@@@@@@@@@@@\n");
 				for(int v:graph[0]){
 					System.out.printf(v+"\n");
 					graph[v]=new TreeSet<Integer>();
 					for(int k=i+1;k<j;k++){
 						vis[k]=0;
-						from[k]=new TreeSet<Integer>();
+						from[k].clear();
 					}
 					for(int k=i+1;k<j;k++){
 						Code o=ir.get(k);
@@ -1386,8 +1389,10 @@ public class Main{
 							from[labpos[o.c]+1].add(k);
 					}
 					for(int k=i+1;k<j;k++)
-						if(hasvar(ir.get(k))&&(ir.get(k).a==v||ir.get(k).b==v))
+						if(hasvar(ir.get(k))&&(ir.get(k).a==v||ir.get(k).b==v)){
 							dfs(k);
+							System.out.printf("%d %b~~~~~~~~~~~~~~~~~~~~~\n",k,vis[k]);
+						}
 					for(int k=i+1;k<j;k++)
 						if(vis[k]==1)occur[k].add(v);
 				}
@@ -1427,9 +1432,18 @@ public class Main{
 					vkind.put(u,"register");
 					vnum.put(u,used[rand.nextInt(used[0])+1]);
 				}
-				for(int k=0;k<ir.size();k++){
+				for(int k=i;k<j;k++){
 					Code o=ir.get(k);
-					if(hasvar(o)&&(vkind.get(o.c)=="register"||vkind.get(o.c)=="stack")&&o.c>16&&!occur[i+1].contains(o.c))
+					if(o.op.equals(""))
+						System.out.printf("\n");
+					else{
+						System.out.print(o.op);
+						System.out.printf(" %d %d %d:",o.c,o.a,o.b);
+						for(int v:occur[i])
+							System.out.printf(" %d",v);
+						System.out.printf("\n");
+					}
+					if(hasvar(o)&&(vkind.get(o.c)=="register"||vkind.get(o.c)=="stack")&&o.c>16&&!occur[k+1].contains(o.c))
 						ir.set(k,new Code("",0,0,0));
 				}
 			}
@@ -1443,19 +1457,6 @@ public class Main{
 		for(int i=1;i<=vart;i++)
 			if(vkind.get(i)!=null)
 				System.out.print(i+" "+vkind.get(i)+" "+(int)vnum.get(i)+"\n");
-		System.out.printf("\n");
-		for(int i=0;i<ir.size();i++){
-			Code o=ir.get(i);
-			if(o.op.equals(""))
-				System.out.printf("\n");
-			else{
-				System.out.print(o.op);
-				System.out.printf(" %d %d %d:",o.c,o.a,o.b);
-				for(int v:occur[i])
-					System.out.printf(" %d",v);
-				System.out.printf("\n");
-			}
-		}
 	}
 	public static void main(String[] args)throws IOException,Exception{
 		System.setOut(new PrintStream(new FileOutputStream(new File("./test/debug.txt"))));
